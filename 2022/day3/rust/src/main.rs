@@ -48,4 +48,31 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let lines: Vec<&str> = raw_data.split("\n").collect();
+    let point_map: HashMap<char, usize> = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        .char_indices()
+        .map(|(i, c)| (c, i + 1))
+        .collect();
+    let unique_items: Vec<HashSet<char>> = lines
+        .iter()
+        .map(|line| HashSet::from_iter(line.chars()))
+        .collect();
+    let result: usize = unique_items
+        .chunks(3)
+        .map(|chunk| {
+            chunk
+                .iter()
+                .fold(
+                    HashSet::from_iter(
+                        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".chars(),
+                    ),
+                    |acc, a| acc.intersection(a).copied().collect(),
+                )
+                .iter()
+                .map(|x| point_map.get(x).unwrap())
+                .sum::<usize>()
+        })
+        .sum();
+    println!("Part 2 result is {result}");
+}
