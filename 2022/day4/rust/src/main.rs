@@ -33,4 +33,21 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}");
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let lines: Vec<&str> = raw_data.split("\n").collect();
+    let result: i32 = lines
+        .iter()
+        .map(|line| {
+            let assignments: Vec<Vec<i32>> = line
+                .split(',')
+                .map(|elf| elf.split('-').map(|x| x.parse().unwrap()).collect())
+                .collect();
+            if (assignments[0][1] < assignments[1][0]) || (assignments[1][1] < assignments[0][0]) {
+                0
+            } else {
+                1
+            }
+        })
+        .sum();
+    println!("Part 2 result is {result}");
+}
