@@ -27,6 +27,16 @@ impl Move {
             stacks[self.to - 1].push(to_move);
         }
     }
+
+    fn execute_2(&self, stacks: &mut [Stack]) {
+        let mut to_move = vec![];
+        for _ in 0..self.n {
+            to_move.push(stacks[self.from - 1].pop().unwrap());
+        }
+        while let Some(c) = to_move.pop() {
+            stacks[self.to - 1].push(c);
+        }
+    }
 }
 
 impl Display for Move {
@@ -93,4 +103,19 @@ fn part_one(raw_data: &str) {
     }
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let parsed = parse_input(raw_data);
+    if let (mut stacks, moves) = parsed {
+        for crate_move in moves {
+            println!("{crate_move}");
+            display_stacks(&stacks);
+            crate_move.execute_2(&mut stacks);
+        }
+        display_stacks(&stacks);
+        let mut result = "".to_string();
+        for stack in &stacks {
+            result += &stack[stack.len() - 1].to_string();
+        }
+        println!("Part 2 result is {result}")
+    }
+}
