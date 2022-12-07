@@ -131,4 +131,30 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}");
 }
 
-fn part_two(raw_data: &str) {}
+fn get_size_to_delete(result: &mut usize, dir: Link<Dir>, to_free: usize) -> usize {
+    let mut size = 0;
+    size += dir
+        .as_ref()
+        .borrow()
+        .files
+        .iter()
+        .map(|f| f.size)
+        .sum::<usize>();
+    for (_key, value) in &dir.as_ref().borrow().directories {
+        let sub_size = get_size_to_delete(result, value.clone(), to_free);
+        size += sub_size;
+    }
+    if size > to_free && size < *result {
+        *result = size;
+    }
+    size
+}
+
+fn part_two(raw_data: &str) {
+    let dir_tree = parse_input(raw_data);
+    let total_size = get_total_size(&mut 0, dir_tree.clone());
+    let to_free = 30000000 - (70000000 - total_size);
+    let mut result = 70000000;
+    get_size_to_delete(&mut result, dir_tree.clone(), to_free);
+    println!("Part 2 result is {result}");
+}
