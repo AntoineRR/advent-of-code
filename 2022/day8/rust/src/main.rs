@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    error::Error,
-    fs,
-};
+use std::{collections::HashSet, error::Error, fs};
 
 fn main() {
     let data = get_input().unwrap();
@@ -86,4 +82,46 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let matrix = parse_matrix(raw_data);
+    let n = matrix.len();
+    let m = matrix[0].len();
+    let mut result = 0;
+
+    for i in 1..n - 1 {
+        for j in 1..m - 1 {
+            let current = matrix[i][j];
+            let mut left = j - 1;
+            let mut left_score = 1;
+            while left > 0 && matrix[i][left] < current {
+                left_score += 1;
+                left -= 1;
+            }
+            let mut right = j + 1;
+            let mut right_score = 1;
+            while right < m - 1 && matrix[i][right] < current {
+                right_score += 1;
+                right += 1;
+            }
+            let mut top = i - 1;
+            let mut top_score = 1;
+            while top > 0 && matrix[top][j] < current {
+                top_score += 1;
+                top -= 1;
+            }
+            let mut bottom = i + 1;
+            let mut bottom_score = 1;
+            while bottom < n - 1 && matrix[bottom][j] < current {
+                bottom_score += 1;
+                bottom += 1;
+            }
+            let score = left_score * right_score * top_score * bottom_score;
+            if score > result {
+                result = score;
+                println!("({i},{j}) left: {left_score}, right: {right_score}, top: {top_score}, bottom: {bottom_score}, total: {score}");
+            }
+        }
+    }
+
+    println!("Part 2 result is {result}")
+}
