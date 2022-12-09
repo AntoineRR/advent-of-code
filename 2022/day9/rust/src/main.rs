@@ -50,36 +50,7 @@ fn part_one(raw_data: &str) {
             } else {
                 head_pos.0 += 1;
             }
-            if head_pos.0 - tail_pos.0 >= 2 {
-                tail_pos.0 += 1;
-                if head_pos.1 - tail_pos.1 >= 1 {
-                    tail_pos.1 += 1;
-                } else if head_pos.1 - tail_pos.1 <= -1 {
-                    tail_pos.1 -= 1;
-                }
-            } else if head_pos.0 - tail_pos.0 <= -2 {
-                tail_pos.0 -= 1;
-                if head_pos.1 - tail_pos.1 >= 1 {
-                    tail_pos.1 += 1;
-                } else if head_pos.1 - tail_pos.1 <= -1 {
-                    tail_pos.1 -= 1;
-                }
-            }
-            if head_pos.1 - tail_pos.1 >= 2 {
-                tail_pos.1 += 1;
-                if head_pos.0 - tail_pos.0 >= 1 {
-                    tail_pos.0 += 1;
-                } else if head_pos.0 - tail_pos.0 <= -1 {
-                    tail_pos.0 -= 1;
-                }
-            } else if head_pos.1 - tail_pos.1 <= -2 {
-                tail_pos.1 -= 1;
-                if head_pos.0 - tail_pos.0 >= 1 {
-                    tail_pos.0 += 1;
-                } else if head_pos.0 - tail_pos.0 <= -1 {
-                    tail_pos.0 -= 1;
-                }
-            }
+            move_tail(head_pos, &mut tail_pos);
             if !visited.contains(&tail_pos) {
                 visited.insert(tail_pos);
             }
@@ -91,4 +62,67 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn move_tail(head_pos: (i32, i32), tail_pos: &mut (i32, i32)) {
+    if head_pos.0 - tail_pos.0 >= 2 {
+        tail_pos.0 += 1;
+        if head_pos.1 - tail_pos.1 >= 1 {
+            tail_pos.1 += 1;
+        } else if head_pos.1 - tail_pos.1 <= -1 {
+            tail_pos.1 -= 1;
+        }
+    } else if head_pos.0 - tail_pos.0 <= -2 {
+        tail_pos.0 -= 1;
+        if head_pos.1 - tail_pos.1 >= 1 {
+            tail_pos.1 += 1;
+        } else if head_pos.1 - tail_pos.1 <= -1 {
+            tail_pos.1 -= 1;
+        }
+    }
+    if head_pos.1 - tail_pos.1 >= 2 {
+        tail_pos.1 += 1;
+        if head_pos.0 - tail_pos.0 >= 1 {
+            tail_pos.0 += 1;
+        } else if head_pos.0 - tail_pos.0 <= -1 {
+            tail_pos.0 -= 1;
+        }
+    } else if head_pos.1 - tail_pos.1 <= -2 {
+        tail_pos.1 -= 1;
+        if head_pos.0 - tail_pos.0 >= 1 {
+            tail_pos.0 += 1;
+        } else if head_pos.0 - tail_pos.0 <= -1 {
+            tail_pos.0 -= 1;
+        }
+    }
+}
+
+fn part_two(raw_data: &str) {
+    let lines: Vec<&str> = raw_data.split("\n").collect();
+    let mut visited = HashSet::new();
+    let mut knot_pos = vec![(0, 0); 10];
+    for line in lines {
+        let (dir, amount) = line.split_once(' ').unwrap();
+        let amount = amount.parse().unwrap();
+        for _ in 0..amount {
+            if dir == "R" {
+                knot_pos[0].1 += 1;
+            } else if dir == "U" {
+                knot_pos[0].0 -= 1;
+            } else if dir == "L" {
+                knot_pos[0].1 -= 1;
+            } else {
+                knot_pos[0].0 += 1;
+            }
+            for i in 0..9 {
+                move_tail(knot_pos[i], &mut knot_pos[i + 1]);
+            }
+
+            if !visited.contains(&knot_pos[9]) {
+                visited.insert(knot_pos[9]);
+            }
+            // println!("{}, head: {:?}, tail: {:?}", line, head_pos, tail_pos);
+            // display_pos(tail_pos, head_pos);
+        }
+    }
+    let result = visited.len();
+    println!("Part 2 result is {result}")
+}
