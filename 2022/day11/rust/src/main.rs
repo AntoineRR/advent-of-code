@@ -13,8 +13,8 @@ fn get_input() -> Result<String, Box<dyn Error>> {
 
 #[derive(Debug)]
 enum Operation {
-    MultiplyOldBy(u64),
-    AddToOld(u64),
+    MultiplyOldBy(u128),
+    AddToOld(u128),
     MultiplyOldByItself,
 }
 
@@ -31,21 +31,21 @@ impl Operation {
         }
     }
 
-    fn apply(&self, worry_level: &mut u64) {
+    fn apply(&self, worry_level: &mut u128) {
         match self {
             Self::AddToOld(n) => *worry_level += n,
             Self::MultiplyOldBy(n) => *worry_level *= n,
             Self::MultiplyOldByItself => *worry_level *= *worry_level,
-        }
+        };
     }
 }
 
 #[derive(Debug)]
 struct Monkey {
     number: u32,
-    items: Vec<u64>,
+    items: Vec<u128>,
     operation: Operation,
-    divisible_by_test: u64,
+    divisible_by_test: u128,
     true_throw_to: usize,
     false_throw_to: usize,
 }
@@ -134,4 +134,31 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let mut monkeys = get_monkeys(raw_data);
+    let reduce_factor = monkeys
+        .iter()
+        .map(|m| m.divisible_by_test)
+        .product::<u128>();
+    let mut monkey_businesses: Vec<u64> = vec![0; 8];
+    for _ in 0..10000 {
+        for i in 0..monkeys.len() {
+            for j in 0..monkeys[i].items.len() {
+                let mut worry_level = monkeys[i].items[j];
+                monkeys[i].operation.apply(&mut worry_level);
+                worry_level %= reduce_factor;
+                let to = if worry_level % monkeys[i].divisible_by_test == 0 {
+                    monkeys[i].true_throw_to
+                } else {
+                    monkeys[i].false_throw_to
+                };
+                monkeys[to].items.push(worry_level);
+                monkey_businesses[i] += 1;
+            }
+            monkeys[i].items.clear();
+        }
+    }
+    monkey_businesses.sort_by(|a, b| b.cmp(a));
+    let result = monkey_businesses[0] * monkey_businesses[1];
+    println!("Part 2 result is {result}")
+}
