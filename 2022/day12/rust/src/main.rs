@@ -17,7 +17,7 @@ fn get_input() -> Result<String, Box<dyn Error>> {
 
 fn get_map(raw_data: &str) -> Vec<Vec<usize>> {
     let lines: Vec<&str> = raw_data.split("\n").collect();
-    let height_mapping: HashMap<char, usize> = "abcdefghijklmnopqrstuvwxyzS"
+    let height_mapping: HashMap<char, usize> = "abcdefghijklmnopqrstuvwxyz"
         .char_indices()
         .map(|(i, c)| (c, i))
         .collect();
@@ -26,10 +26,12 @@ fn get_map(raw_data: &str) -> Vec<Vec<usize>> {
         .map(|l| {
             l.chars()
                 .map(|c| {
-                    if c != 'E' {
-                        *height_mapping.get(&c).unwrap()
-                    } else {
+                    if c == 'E' {
                         25
+                    } else if c == 'S' {
+                        0
+                    } else {
+                        *height_mapping.get(&c).unwrap()
                     }
                 })
                 .collect()
@@ -97,15 +99,14 @@ fn walk(
     result
 }
 
-fn get_start(map: &[Vec<usize>]) -> Option<Position> {
-    for i in 0..map.len() {
-        for j in 0..map[i].len() {
-            if map[i][j] == 26 {
-                return Some((i, j));
-            }
-        }
-    }
-    None
+fn get_start(raw_data: &str) -> Position {
+    let (i, line) = raw_data
+        .split("\n")
+        .enumerate()
+        .find(|l| l.1.contains('S'))
+        .unwrap();
+    let (j, _) = line.chars().enumerate().find(|c| c.1 == 'S').unwrap();
+    (i, j)
 }
 
 fn get_end(raw_data: &str) -> Position {
@@ -136,7 +137,7 @@ fn display_visited(raw_data: &str, visited: &HashSet<Position>) {
 
 fn part_one(raw_data: &str) {
     let map = get_map(raw_data);
-    let start = get_start(&map).unwrap();
+    let start = get_start(raw_data);
     let end = get_end(raw_data);
     let mut visited = HashSet::new();
     let mut to_visit = VecDeque::from([Node {
@@ -147,4 +148,33 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}");
 }
 
-fn part_two(raw_data: &str) {}
+fn get_start_list(map: &[Vec<usize>]) -> Vec<Position> {
+    let mut result = vec![];
+    for i in 0..map.len() {
+        for j in 0..map[i].len() {
+            if map[i][j] == 0 {
+                result.push((i, j));
+            }
+        }
+    }
+    result
+}
+
+fn part_two(raw_data: &str) {
+    let map = get_map(raw_data);
+    let starts = get_start_list(&map);
+    let end = get_end(raw_data);
+    let mut shortest = map.len() * map[0].len();
+    for start in starts {
+        let mut visited = HashSet::new();
+        let mut to_visit = VecDeque::from([Node {
+            position: start,
+            parent: None,
+        }]);
+        let result = walk(raw_data, &map, end, &mut to_visit, &mut visited);
+        if result < shortest && result != 0 {
+            shortest = result;
+        }
+    }
+    println!("Part 2 result is {shortest}");
+}
