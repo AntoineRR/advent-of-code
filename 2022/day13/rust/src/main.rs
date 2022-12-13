@@ -1,4 +1,4 @@
-use std::{error::Error, fs};
+use std::{cmp::Ordering, error::Error, fs};
 
 fn main() {
     let data = get_input().unwrap();
@@ -48,7 +48,6 @@ fn parse_as_int(input: &str) -> Option<usize> {
 }
 
 fn is_right_order(pair: &(&str, &str)) -> Option<bool> {
-    println!("{:?}", pair);
     if let Some(v1) = parse_as_vec(pair.0) {
         if let Some(v2) = parse_as_vec(pair.1) {
             let mut index = 0;
@@ -107,4 +106,38 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn compare(a: &str, b: &str) -> Ordering {
+    if let Some(r) = is_right_order(&(a, b)) {
+        if r {
+            return Ordering::Less;
+        } else {
+            return Ordering::Greater;
+        }
+    } else {
+        return Ordering::Equal;
+    }
+}
+
+fn part_two(raw_data: &str) {
+    let mut packets: Vec<&str> = raw_data
+        .split("\n\n")
+        .flat_map(|pair| pair.split('\n'))
+        .collect();
+    packets.push("[[2]]");
+    packets.push("[[6]]");
+    packets.sort_by(|a, b| compare(a, b));
+    let first = packets
+        .iter()
+        .enumerate()
+        .find(|(_, &p)| p == "[[2]]")
+        .map(|a| a.0 + 1)
+        .unwrap();
+    let second = packets
+        .iter()
+        .enumerate()
+        .find(|(_, &p)| p == "[[6]]")
+        .map(|a| a.0 + 1)
+        .unwrap();
+    let result = first * second;
+    println!("Part 2 result is {result}")
+}
