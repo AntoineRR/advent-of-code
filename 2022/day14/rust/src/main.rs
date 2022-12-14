@@ -1,8 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    error::Error,
-    fs,
-};
+use std::{collections::HashSet, error::Error, fs};
 
 fn main() {
     let data = get_input().unwrap();
@@ -15,7 +11,7 @@ fn get_input() -> Result<String, Box<dyn Error>> {
     Ok(data)
 }
 
-fn part_one(raw_data: &str) {
+fn get_rocks(raw_data: &str) -> HashSet<(i32, i32)> {
     let lines: Vec<&str> = raw_data.split("\n").collect();
     let mut rocks = HashSet::new();
     for line in lines {
@@ -57,6 +53,11 @@ fn part_one(raw_data: &str) {
         }
         rocks.extend(to_add);
     }
+    rocks
+}
+
+fn part_one(raw_data: &str) {
+    let rocks = get_rocks(raw_data);
     let lowest_x = *rocks.iter().map(|(x, _)| x).min().unwrap();
     let highest_x = *rocks.iter().map(|(x, _)| x).max().unwrap();
     let highest_y = *rocks.iter().map(|(_, y)| y).max().unwrap();
@@ -104,11 +105,70 @@ fn part_one(raw_data: &str) {
             if current.0 > highest_x || current.0 < lowest_x || current.1 > highest_y {
                 break 'general;
             }
-            // display(&resting_sand);
+            //display(&resting_sand);
         }
     }
     let result = resting_sand.len();
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let rocks = get_rocks(raw_data);
+    let lowest_x = *rocks.iter().map(|(x, _)| x).min().unwrap();
+    let highest_x = *rocks.iter().map(|(x, _)| x).max().unwrap();
+    let highest_y = *rocks.iter().map(|(_, y)| y).max().unwrap();
+
+    let origin = (500, 0);
+    let mut resting_sand = HashSet::new();
+
+    let display = |resting_sand: &HashSet<(i32, i32)>| {
+        let mut to_display = "".to_string();
+        for i in 0..highest_y + 1 {
+            for j in lowest_x..highest_x + 1 {
+                if rocks.contains(&(j, i)) {
+                    to_display += "#";
+                } else if resting_sand.contains(&(j, i)) {
+                    to_display += "o";
+                } else {
+                    to_display += " ";
+                }
+            }
+            to_display += "\n";
+        }
+        println!("{to_display}");
+    };
+
+    'general: loop {
+        let mut current = origin;
+        //println!("n: {}", resting_sand.len());
+        loop {
+            if resting_sand.contains(&current) {
+                break 'general;
+            }
+            let below = (current.0, current.1 + 1);
+            if rocks.contains(&below) || resting_sand.contains(&below) {
+                let below_left = (current.0 - 1, current.1 + 1);
+                if rocks.contains(&below_left) || resting_sand.contains(&below_left) {
+                    let below_right = (current.0 + 1, current.1 + 1);
+                    if rocks.contains(&below_right) || resting_sand.contains(&below_right) {
+                        resting_sand.insert(current);
+                        break;
+                    } else {
+                        current = below_right;
+                    }
+                } else {
+                    current = below_left;
+                }
+            } else {
+                current = below;
+            }
+            if current.1 >= highest_y + 1 {
+                resting_sand.insert(current);
+                break;
+            }
+            //display(&resting_sand);
+        }
+    }
+    let result = resting_sand.len();
+    println!("Part 2 result is {result}")
+}
