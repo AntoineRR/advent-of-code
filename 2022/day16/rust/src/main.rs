@@ -122,4 +122,59 @@ fn part_one(raw_data: &str) {
     println!("Part 1 result is {result}")
 }
 
-fn part_two(raw_data: &str) {}
+fn part_two(raw_data: &str) {
+    let rooms_complete = get_rooms(raw_data);
+    let rooms_as_u64: HashMap<String, u64> = rooms_complete
+        .iter()
+        .enumerate()
+        .map(|(i, r)| (r.name.to_string(), 1 << i))
+        .collect();
+    let rooms_graph = reduce_map(rooms_complete);
+    let time_limit = 26;
+    let mut to_visit = vec![(find("AA", &rooms_graph), 0, 0, 0, 0)];
+    let mut paths = vec![];
+    while !to_visit.is_empty() {
+        let (room, pressure, cost, visited, opened) = to_visit.pop().unwrap();
+        let pressure = pressure + (time_limit - cost) * room.flow_rate;
+        let new_visited = visited | rooms_as_u64.get(&room.name).unwrap();
+        let new_opened = if rooms_graph
+            .iter()
+            .any(|r| r.name == room.name && room.name != "AA")
+        {
+            opened | rooms_as_u64.get(&room.name).unwrap()
+        } else {
+            opened
+        };
+        paths.push((new_opened, pressure));
+        for (r, c) in &room.cost_map {
+            if new_visited & rooms_as_u64.get(r).unwrap() == 0 {
+                if cost + c < time_limit {
+                    to_visit.push((
+                        find(&r, &rooms_graph),
+                        pressure,
+                        cost + c,
+                        new_visited,
+                        new_opened,
+                    ));
+                }
+            }
+        }
+    }
+
+    let mut result = 0;
+    let current_max = paths.iter().map(|(_, m)| m).max().unwrap();
+    for path_1 in &paths {
+        if path_1.1 + current_max < result {
+            continue;
+        }
+        for path_2 in &paths {
+            if path_1.1 + path_2.1 > result {
+                if path_1.0 & path_2.0 == 0 {
+                    result = path_1.1 + path_2.1;
+                }
+            }
+        }
+    }
+
+    println!("Part 2 result is {result}")
+}
